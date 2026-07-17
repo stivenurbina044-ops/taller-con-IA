@@ -6,8 +6,8 @@ const ALLOWED_EMAIL_DOMAINS = ["mailinator.com", "example.com"];
 const DEMO_DATA = {
   "TG-0001": {
     "Customer ID": "TG-0001",
-    "Name": "Renata Hernandez",
-    "Email": "renata.hernandez1@mailinator.com",
+    "Name": "Laura Gomez",
+    "Email": "laura.gomez1@mailinator.com",
     "Product Purchased": "Auriculares NoiseCancel Pro",
     "Purchase Date": "2025-11-19",
     "Amount Spent ($)": "1858.00",
@@ -331,9 +331,6 @@ const DEMO_DATA = {
   }
 };
 
-// --------------------------------------------------------------------------
-// 2. ESTADO
-// --------------------------------------------------------------------------
 let customers = [];
 let filteredCustomers = [];
 
@@ -354,9 +351,6 @@ const els = {
   nextIdPreview: document.getElementById("nextIdPreview"),
 };
 
-// --------------------------------------------------------------------------
-// 3. FETCH DE DATOS (Firebase Realtime Database)
-// --------------------------------------------------------------------------
 async function fetchCustomers() {
   try {
     const response = await fetch(FIREBASE_URL);
@@ -367,7 +361,7 @@ async function fetchCustomers() {
 
     return Object.values(data);
   } catch (error) {
-    // Protocolo de depuración asistida: registra el error en consola.
+
     console.warn(
       "[TrendGear] No se pudo conectar a Firebase, usando dataset demo local.",
       error
@@ -376,9 +370,6 @@ async function fetchCustomers() {
   }
 }
 
-// --------------------------------------------------------------------------
-// 4. RENDERIZADO — recorrido con forEach + template literals
-// --------------------------------------------------------------------------
 function formatCurrency(value) {
   const n = typeof value === "string" ? parseFloat(value) : value;
   return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -425,8 +416,6 @@ function renderTable(data) {
     return;
   }
 
-  // Recorrido del objeto de datos con forEach, generando un template
-  // literal de HTML por registro (fila de tabla) e inyectándolo en el DOM.
   let rowsHtml = "";
   data.forEach((customer) => {
     rowsHtml += `
@@ -480,9 +469,6 @@ function populateMembershipFilter(data) {
     statuses.map((s) => `<option value="${s}">${s}</option>`).join("");
 }
 
-// --------------------------------------------------------------------------
-// 5. INTERACTIVIDAD — búsqueda, filtro, menú hamburguesa
-// --------------------------------------------------------------------------
 function applyFilters() {
   const query = els.searchInput.value.trim().toLowerCase();
   const membership = els.membershipFilter.value;
@@ -507,7 +493,6 @@ function setupHamburger() {
     els.hamburgerBtn.setAttribute("aria-label", isOpen ? "Cerrar menú" : "Abrir menú");
   });
 
-  // Cierra el menú al elegir una sección (comportamiento esperado en móvil)
   els.primaryNav.querySelectorAll(".nav-link").forEach((link) => {
     link.addEventListener("click", () => {
       els.primaryNav.classList.remove("open");
@@ -516,12 +501,6 @@ function setupHamburger() {
   });
 }
 
-// --------------------------------------------------------------------------
-// 6. ALTA DE CLIENTES — formulario "Agregar cliente"
-// --------------------------------------------------------------------------
-
-// Genera el siguiente Customer ID consecutivo (TG-0001, TG-0002, ...)
-// a partir de los IDs ya cargados, sin depender de contadores externos.
 function generateNextId(data) {
   const nums = data
     .map((c) => parseInt(String(c["Customer ID"] || "").replace("TG-", ""), 10))
@@ -536,8 +515,6 @@ function updateNextIdPreview() {
   }
 }
 
-// Checklist de validacion de integridad (Fase I), aplicado al nuevo registro
-// antes de escribirlo en Firebase.
 function validateNewCustomer(record) {
   const errors = [];
   const today = new Date().toISOString().slice(0, 10);
@@ -617,9 +594,7 @@ async function handleAddCustomer(event) {
   els.submitBtn.textContent = "Guardando…";
 
   try {
-    // Escribe el registro en Firebase bajo su propia clave (PUT en vez de
-    // POST) para mantener el esquema de IDs "TG-XXXX" en vez del push-key
-    // aleatorio que genera Firebase por defecto.
+  
     const response = await fetch(`${FIREBASE_BASE_URL}${FIREBASE_NODE}/${record["Customer ID"]}.json`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -628,7 +603,6 @@ async function handleAddCustomer(event) {
 
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-    // Actualiza el estado local sin esperar un nuevo fetch completo.
     customers.push(record);
     filteredCustomers = customers;
 
@@ -641,7 +615,7 @@ async function handleAddCustomer(event) {
     showFormMessage(`Cliente ${record["Customer ID"]} agregado correctamente.`, "success");
     els.addForm.reset();
   } catch (error) {
-    // Protocolo de depuracion asistida: registra el error completo en consola.
+
     console.warn("[TrendGear] No se pudo guardar el cliente en Firebase.", error);
     showFormMessage(
       "No se pudo guardar en Firebase. Verifica que las reglas de escritura (.write) esten habilitadas y que la URL del proyecto sea correcta.",
@@ -653,9 +627,6 @@ async function handleAddCustomer(event) {
   }
 }
 
-// --------------------------------------------------------------------------
-// 7. INICIALIZACIÓN
-// --------------------------------------------------------------------------
 async function init() {
   setupHamburger();
 
